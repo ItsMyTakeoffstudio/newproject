@@ -523,371 +523,31 @@ footer a { color: var(--amber-light); text-decoration: none; }
 </div>
 
 <script>
-// ─── CREDENTIALS (change these to your own) ──────────────────────────────────
-const ADMIN_ID    = "admin";            // ← change your admin username here
-const ADMIN_PASS  = "chai@1234";        // ← change your password here
+// ─── CONFIG ─────────────────────────────────────
+const ADMIN_ID = "admin";
+const ADMIN_PASS = "chai@1234";
 const OWNER_PHONE = "919030982929";
-
-// ─── FIREBASE CONFIG ──────────────────────────────────────────────────────────
-// SETUP STEPS:
-//  1. Go to https://console.firebase.google.com → Create a project (free Spark plan)
-//  2. Build → Realtime Database → Create database → Start in TEST mode
-//  3. Copy the database URL below (looks like https://YOUR-APP-default-rtdb.firebaseio.com)
-//  4. In Realtime Database → Rules, set: { "rules": { ".read": true, ".write": true } }
 const FIREBASE_URL = "https://chai-lije-app-default-rtdb.asia-southeast1.firebasedatabase.app/";
-  
-  // ─── MENU DATA ───────────────────────────────────────────────────────────────
-const MENU = [
-  {
-    id: "chai", label: "☕ Chai",
-    items: [
-      { name: "Kadak Chai", price: 20 },
-      { name: "Ginger Chai", price: 25 },
-      { name: "Masala Chai", price: 25 },
-      { name: "Black Tea", price: 25 },
-      { name: "Lemon Tea", price: 25 }
-    ]
-  },
-  {
-    id: "special", label: "⭐ Special Chai",
-    items: [
-      { name: "Chailije Special", price: 25 },
-      { name: "Star Chai", price: 25 },
-      { name: "Cinnamon Chai", price: 25 },
-      { name: "Ajwain Chai", price: 25 },
-      { name: "Jaggery Chai", price: 25 },
-      { name: "Dates Ginger Chai", price: 25 }
-    ]
-  },
-  {
-    id: "immunity", label: "🌿 Immunity Boosters",
-    items: [
-      { name: "Green Tea", price: 25 },
-      { name: "Traditional Kaadha", price: 30 },
-      { name: "Moringa Tea", price: 30 }
-    ]
-  },
-  {
-    id: "snacks", label: "🍪 Chai Ke Sath",
-    items: [
-      { name: "Osmania Cookies", sub: "2 pcs", price: 10 },
-      { name: "Coconut Cookies", sub: "2 pcs", price: 15 },
-      { name: "Khara Cookies", sub: "2 pcs", price: 15 },
-      { name: "Oats Cookies", sub: "1 pc", price: 10 },
-      { name: "Carrot Cookies", sub: "1 pc", price: 10 },
-      { name: "Garlic Sticks", sub: "2 pcs", price: 15 },
-      { name: "Methi Khari", sub: "3 pcs", price: 15 }
-    ]
-  },
-  {
-    id: "coffee", label: "☕ Coffee",
-    items: [
-      { name: "Instant Coffee", price: 30 },
-      { name: "Filter Coffee", price: 30 },
-      { name: "Adrak Coffee with Jaggery", price: 30 },
-      { name: "Hot Chocolate", price: 90 }
-    ]
-  },
-  {
-    id: "milk", label: "🥛 Milk",
-    items: [
-      { name: "Badam Milk", sub: "Cold", price: 60 },
-      { name: "Badam Milk", sub: "Hot", price: 25 },
-      { name: "Sonth Milk", price: 25 },
-      { name: "Raagi Malt", price: 25 },
-      { name: "Oats Milk", price: 35 }
-    ]
-  },
-  {
-    id: "pizza", label: "🍕 Pizzas",
-    items: [
-      { name: "Veg Pizza", price: 110 },
-      { name: "Pizza Margherita", price: 110 },
-      { name: "Cheese Corn Pizza", price: 120 },
-      { name: "Chocolate Pizza", price: 120 },
-      { name: "Tandoori Paneer Pizza", price: 125 }
-    ]
-  },
-  {
-    id: "sandwich", label: "🥪 Sandwich",
-    items: [
-      { name: "Veg Sandwich", sub: "Grilled", price: 50 },
-      { name: "Corn Sandwich", sub: "Grilled", price: 50 },
-      { name: "Mumbai Masala Sandwich", sub: "Grilled", price: 55 }
-    ]
-  },
-  {
-    id: "shakes", label: "🥤 Milk Shakes",
-    items: [
-      { name: "Strawberry Shake", price: 89 },
-      { name: "Oats Banana Shake", price: 99 },
-      { name: "Oreo Shake", price: 99 },
-      { name: "Gulkand Shake", price: 99 },
-      { name: "Blueberry Shake", price: 99 },
-      { name: "Chocolate Shake", price: 99 },
-      { name: "Dates Shake", price: 99 },
-      { name: "Caramel Banana Shake", price: 99 },
-      { name: "KitKat Shake", price: 99 }
-    ]
-  },
-  {
-    id: "lassi", label: "🥛 Lassi",
-    items: [
-      { name: "Khara Lassi", price: 45 },
-      { name: "Sweet Lassi", price: 45 },
-      { name: "Rose Lassi", price: 45 },
-      { name: "Chocolate Lassi", price: 45 }
-    ]
-  },
-  {
-    id: "iced", label: "🧊 Iced Teas",
-    items: [
-      { name: "Lemon Mint Iced Tea", price: 50 },
-      { name: "Strawberry Iced Tea", price: 50 },
-      { name: "Orange Iced Tea", price: 50 },
-      { name: "Blue Berry Iced Tea", price: 50 }
-    ]
-  }
-];
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
+// ─── STATE ──────────────────────────────────────
 let cart = {};
-let orders = []; // now populated from Firebase, not localStorage
-let menuAvailability = JSON.parse(localStorage.getItem("chailije_availability") || "{}");
+let orders = [];
 let isAdminLoggedIn = false;
-let adminPollInterval = null;   // fallback only
-let adminEvtSource   = null;    // Firebase SSE stream
-let adminInitialLoad = true;    // suppress sound on first load
 
-// ─── FIREBASE HELPERS ─────────────────────────────────────────────────────────
-function fbConfigured() {
-  return FIREBASE_URL && !FIREBASE_URL.includes("YOUR-PROJECT");
-}
-
+// ─── FIREBASE ───────────────────────────────────
 async function fbGetOrders() {
-  if (!fbConfigured()) return [];
-  try {
-    const r = await fetch(FIREBASE_URL + "orders.json");
-    const data = await r.json();
-    renderAdminOrders(data);
-    if (!data) return [];
-    return Object.entries(data)
-      .map(([k, v]) => ({ ...v, _fbKey: k }))
-      .sort((a, b) => (b.timestamp_ms || 0) - (a.timestamp_ms || 0));
-  } catch(e) { console.error("Firebase read error:", e); return []; }
+  const res = await fetch(FIREBASE_URL + "orders.json");
+  const data = await res.json();
+
+  if (!data) return [];
+
+  return Object.entries(data).map(([key, val]) => ({
+    ...val,
+    _fbKey: key
+  })).reverse();
 }
 
-async function fbPostOrder(order) {
-  if (!fbConfigured()) return;
-  await fetch(FIREBASE_URL + "orders.json", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(order)
-  });
-}
-
-async function fbPatchOrder(fbKey, update) {
-  if (!fbConfigured()) return;
-  await fetch(FIREBASE_URL + "/orders/" + fbKey + ".json", {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(update)
-  });
-}
-
-async function fbDeleteOrder(fbKey) {
-  if (!fbConfigured()) return;
-  await fetch(FIREBASE_URL + "/orders/" + fbKey + ".json", { method: "DELETE" });
-}
-
-// ─── AVAILABILITY HELPERS ─────────────────────────────────────────────────────
-function getItemAvailable(key) {
-  return menuAvailability[key] !== false; // default: available
-}
-
-function setItemAvailable(key, val) {
-  menuAvailability[key] = val;
-  localStorage.setItem("chailije_availability", JSON.stringify(menuAvailability));
-}
-
-// ─── BUILD MENU ───────────────────────────────────────────────────────────────
-function buildMenu() {
-  const tabRow = document.getElementById("tab-row");
-  const menuSections = document.getElementById("menu-sections");
-
-  MENU.forEach((cat, i) => {
-    const btn = document.createElement("button");
-    btn.className = "tab-btn" + (i === 0 ? " active" : "");
-    btn.textContent = cat.label;
-    btn.dataset.target = cat.id;
-    btn.onclick = () => selectTab(cat.id);
-    tabRow.appendChild(btn);
-
-    const sec = document.createElement("div");
-    sec.className = "menu-section" + (i === 0 ? " visible" : "");
-    sec.id = "sec-" + cat.id;
-
-    let html = `<h2 class="menu-category-header">${cat.label}</h2><div class="menu-grid">`;
-    cat.items.forEach(item => {
-      const key = item.name + "|" + item.price + (item.sub ? "|" + item.sub : "");
-      const displaySub = item.sub ? `<span class="menu-card-sub">${item.sub}</span>` : "";
-      const isAvail = getItemAvailable(key);
-      const labelFull = escapeQ(item.name + (item.sub ? " (" + item.sub + ")" : ""));
-
-      html += `
-        <div class="menu-card${isAvail ? "" : " out-of-stock"}" id="card-${cssId(key)}">
-          <div>
-            <div class="menu-card-name">${item.name}</div>
-            ${displaySub}
-          </div>
-          <div class="menu-card-bottom">
-            <span class="menu-card-price">₹${item.price}</span>
-            <button class="btn-add" id="addbtn-${cssId(key)}"
-              style="${isAvail ? "" : "display:none"}"
-              onclick="addToCart('${escapeQ(key)}', '${labelFull}', ${item.price})">+</button>
-            <span class="oos-badge" id="oos-${cssId(key)}"
-              style="${isAvail ? "display:none" : ""}">Out of Stock</span>
-          </div>
-        </div>`;
-    });
-    html += "</div>";
-    sec.innerHTML = html;
-    menuSections.appendChild(sec);
-  });
-}
-
-function refreshMenuCard(key, available) {
-  const cardEl  = document.getElementById("card-" + cssId(key));
-  const btnEl   = document.getElementById("addbtn-" + cssId(key));
-  const oosEl   = document.getElementById("oos-" + cssId(key));
-  if (!cardEl) return;
-  cardEl.classList.toggle("out-of-stock", !available);
-  if (btnEl) btnEl.style.display = available ? "" : "none";
-  if (oosEl) oosEl.style.display = available ? "none" : "";
-}
-
-function cssId(str) { return str.replace(/[^a-zA-Z0-9]/g, "_"); }
-function escapeQ(str) { return str.replace(/'/g, "\\'"); }
-
-function selectTab(id) {
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.target === id));
-  document.querySelectorAll(".menu-section").forEach(s => s.classList.toggle("visible", s.id === "sec-" + id));
-}
-
-// ─── CART LOGIC ───────────────────────────────────────────────────────────────
-function addToCart(key, label, price) {
-  if (!getItemAvailable(key)) { showToast("❌ Item not available"); return; }
-  if (!cart[key]) cart[key] = { label, price, qty: 0 };
-  cart[key].qty++;
-  updateCartUI();
-  const btn = document.getElementById("addbtn-" + cssId(key));
-  if (btn) {
-    btn.classList.add("added");
-    btn.textContent = cart[key].qty;
-    setTimeout(() => btn.classList.remove("added"), 300);
-  }
-  showToast("Added: " + label);
-}
-
-function changeQty(key, delta) {
-  if (!cart[key]) return;
-  cart[key].qty += delta;
-  if (cart[key].qty <= 0) delete cart[key];
-  updateCartUI();
-  if (document.getElementById("cart-modal").classList.contains("open")) renderCartModal();
-  const btn = document.getElementById("addbtn-" + cssId(key));
-  if (btn) btn.textContent = cart[key] ? cart[key].qty : "+";
-}
-
-function cartItemCount() { return Object.values(cart).reduce((s, v) => s + v.qty, 0); }
-function cartTotal()     { return Object.values(cart).reduce((s, v) => s + v.qty * v.price, 0); }
-
-function updateCartUI() {
-  const count = cartItemCount();
-  const total = cartTotal();
-  document.getElementById("cart-count-label").textContent = count + " item" + (count !== 1 ? "s" : "");
-  document.getElementById("cart-total-label").textContent = "₹" + total;
-  document.getElementById("cart-bar").classList.toggle("visible", count > 0);
-}
-
-function openCart()  { document.getElementById("cart-modal").classList.add("open"); renderCartModal(); }
-function closeCart() { document.getElementById("cart-modal").classList.remove("open"); }
-function handleModalClick(e) { if (e.target === document.getElementById("cart-modal")) closeCart(); }
-
-function renderCartModal() {
-  const container = document.getElementById("cart-items-list");
-  const keys = Object.keys(cart);
-  if (keys.length === 0) {
-    container.innerHTML = `<div class="empty-cart"><div class="icon">🧾</div><p>Your cart is empty.<br>Add something delicious!</p></div>`;
-    return;
-  }
-  let html = "";
-  keys.forEach(key => {
-    const item = cart[key];
-    html += `
-      <div class="cart-item-row">
-        <span class="cart-item-name">${item.label}</span>
-        <div class="qty-ctrl">
-          <button class="qty-btn" onclick="changeQty('${escapeQ(key)}', -1)">−</button>
-          <span class="qty-num">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty('${escapeQ(key)}', 1)">+</button>
-        </div>
-        <span class="cart-item-price">₹${item.qty * item.price}</span>
-      </div>`;
-  });
-  const total = cartTotal();
-  const count = cartItemCount();
-  html += `
-    <div class="cart-summary">
-      <div class="cart-row"><span>Subtotal (${count} items)</span><span>₹${total}</span></div>
-      <div class="cart-total-big"><span>Total</span><span>₹${total}</span></div>
-    </div>
-    <button class="btn-place-order" onclick="placeOrder()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/></svg>
-      Place Order via WhatsApp
-    </button>
-    <button class="btn-clear-cart" onclick="clearCart()">Clear Cart</button>`;
-  container.innerHTML = html;
-}
-
-function clearCart() {
-  cart = {};
-  updateCartUI();
-  renderCartModal();
-  document.querySelectorAll(".btn-add").forEach(b => b.textContent = "+");
-}
-
-// ─── ORDER SOUND ─────────────────────────────────────────────────────────────
-function playOrderSound() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = [
-      { freq: 880,  start: 0.00, dur: 0.18 },
-      { freq: 1174, start: 0.18, dur: 0.18 },
-      { freq: 1318, start: 0.36, dur: 0.28 },
-      { freq: 1046, start: 0.64, dur: 0.40 },
-    ];
-    notes.forEach(({ freq, start, dur }) => {
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain); gain.connect(ctx.destination);
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
-      gain.gain.setValueAtTime(0, ctx.currentTime + start);
-      gain.gain.linearRampToValueAtTime(0.55, ctx.currentTime + start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
-      osc.start(ctx.currentTime + start);
-      osc.stop(ctx.currentTime + start + dur + 0.05);
-    });
-    setTimeout(() => ctx.close(), 1500);
-  } catch (e) { console.warn("Audio not available:", e); }
-}
-
-// ─── ORDER PLACEMENT ──────────────────────────────────────────────────────────
-function generateOrderId() {
-  return "CL" + Date.now().toString(36).toUpperCase().slice(-5);
-}
-
+// ─── PLACE ORDER ────────────────────────────────
 async function placeOrder() {
   const keys = Object.keys(cart);
   if (keys.length === 0) return;
@@ -900,291 +560,82 @@ async function placeOrder() {
     price: cart[k].price
   }));
 
-  const total = cartTotal();
+  const total = Object.values(cart).reduce((s, v) => s + v.qty * v.price, 0);
 
   const order = {
     id: orderId,
     items,
     total,
     status: "Preparing",
-    timestamp: new Date().toLocaleTimeString(),
-    timestamp_ms: Date.now()
+    timestamp: new Date().toLocaleTimeString()
   };
 
-  // Save to Firebase (safe)
-  try {
-    await fetch(FIREBASE_URL + "orders.json", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(order)
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  await fetch(FIREBASE_URL + "orders.json", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(order)
+  });
 
-  // Open WhatsApp (always works)
+  // WhatsApp
   let msg = `Order ${orderId}\n\n`;
   items.forEach(i => {
-    msg += `${i.label} x ${i.qty} = ₹${i.qty * i.price}\n`;
+    msg += `${i.label} x ${i.qty} = ₹${i.qty*i.price}\n`;
   });
   msg += `\nTotal: ₹${total}`;
 
-  window.open(
-    "https://wa.me/" + OWNER_PHONE + "?text=" + encodeURIComponent(msg),
-    "_blank"
-  );
+  window.open("https://wa.me/" + OWNER_PHONE + "?text=" + encodeURIComponent(msg));
 
-  showToast("Order placed!");
-  clearCart();
-  closeCart();
-}
-// ─── ADMIN REAL-TIME LISTENER (Firebase EventSource) ─────────────────────────
-function startAdminPolling() {
-  if (!fbConfigured()) {
-    renderAdminOrders(); // will show the "configure Firebase" message
-    return;
-  }
-
-  adminInitialLoad = true;
-
-  // Open Firebase Server-Sent Events stream — fires instantly on any DB change
-  adminEvtSource = new EventSource(FIREBASE_URL + "orders.json");
-
-  adminEvtSource.addEventListener("put", async (e) => {
-    const d = JSON.parse(e.data);
-
-    if (adminInitialLoad) {
-      // First event is the full snapshot — just render, no sound
-      adminInitialLoad = false;
-      await renderAdminOrders();
-      return;
-    }
-
-    // Subsequent puts: a new order was added (path = "/FIREBASE_KEY", data != null)
-    if (d.path !== "/" && d.data !== null && d.data.status === "Preparing") {
-      playOrderSound();
-      showToast("🔔 New order received!");
-      document.getElementById("order-dot").style.display = "inline-block";
-    }
-
-    if (document.getElementById("admin-orders-panel").style.display !== "none") {
-      await renderAdminOrders();
-    }
-  });
-
-  adminEvtSource.addEventListener("patch", async () => {
-    if (document.getElementById("admin-orders-panel").style.display !== "none") {
-      await renderAdminOrders();
-    }
-  });
-
-  adminEvtSource.onerror = () => {
-    // SSE failed — fall back to polling every 5 s
-    console.warn("Firebase SSE failed, falling back to polling");
-    if (adminEvtSource) { adminEvtSource.close(); adminEvtSource = null; }
-    if (!adminPollInterval) {
-      adminPollInterval = setInterval(async () => {
-        if (document.getElementById("admin-orders-panel").style.display !== "none") {
-          const prev = orders.length;
-          await renderAdminOrders();
-          if (orders.length > prev) {
-            playOrderSound();
-            showToast("🔔 New order received!");
-            document.getElementById("order-dot").style.display = "inline-block";
-          }
-        }
-      }, 5000);
-    }
-  };
+  cart = {};
+  alert("Order placed!");
 }
 
-function stopAdminPolling() {
-  if (adminEvtSource)    { adminEvtSource.close(); adminEvtSource = null; }
-  if (adminPollInterval) { clearInterval(adminPollInterval); adminPollInterval = null; }
-  adminInitialLoad = true;
-}
-
-// ─── ADMIN LOGIN ──────────────────────────────────────────────────────────────
-function openLoginModal() {
-  if (isAdminLoggedIn) { switchView("admin"); return; }
-  document.getElementById("login-modal").classList.add("open");
-  document.getElementById("admin-id-input").value   = "";
-  document.getElementById("admin-pass-input").value = "";
-  document.getElementById("login-error").textContent = "";
-  setTimeout(() => document.getElementById("admin-id-input").focus(), 100);
-}
-
-function closeLoginModal() {
-  document.getElementById("login-modal").classList.remove("open");
-}
-
-function checkLogin() {
-  const enteredId   = document.getElementById("admin-id-input").value.trim();
-  const enteredPass = document.getElementById("admin-pass-input").value;
-  if (enteredId === ADMIN_ID && enteredPass === ADMIN_PASS) {
-    closeLoginModal();
-    isAdminLoggedIn = true;
-    switchView("admin");
-  } else {
-    document.getElementById("login-error").textContent = "❌ Incorrect ID or password. Try again.";
-    document.getElementById("admin-pass-input").value = "";
-    document.getElementById("admin-pass-input").focus();
-  }
-}
-
-document.getElementById("admin-pass-input").addEventListener("keydown", e => {
-  if (e.key === "Enter") checkLogin();
-});
-document.getElementById("admin-id-input").addEventListener("keydown", e => {
-  if (e.key === "Enter") document.getElementById("admin-pass-input").focus();
-});
-
-function adminLogout() {
-  isAdminLoggedIn = false;
-  stopAdminPolling();
-  document.getElementById("order-dot").style.display = "none";
-  switchView("customer");
-  showToast("Logged out successfully");
-}
-
-// ─── VIEW SWITCHING ───────────────────────────────────────────────────────────
-function switchView(view) {
-  const isAdmin = view === "admin";
-  document.getElementById("customer-view").style.display = isAdmin ? "none" : "block";
-  document.getElementById("admin-view").style.display    = isAdmin ? "block" : "none";
-  document.getElementById("btn-customer").classList.toggle("active", !isAdmin);
-  document.getElementById("btn-admin").classList.toggle("active", isAdmin);
-  if (isAdmin) {
-    showAdminTab("orders");
-    startAdminPolling();
-  } else {
-    stopAdminPolling();
-  }
-}
-
-// ─── ADMIN TABS ───────────────────────────────────────────────────────────────
-function showAdminTab(tab) {
-  document.getElementById("admin-orders-panel").style.display = tab === "orders" ? "block" : "none";
-  document.getElementById("admin-menu-panel").style.display   = tab === "menu"   ? "block" : "none";
-  document.getElementById("atab-orders").classList.toggle("active", tab === "orders");
-  document.getElementById("atab-menu").classList.toggle("active", tab === "menu");
-  if (tab === "orders") renderAdminOrders();
-  if (tab === "menu")   renderAdminMenu();
-}
-
-// ─── ADMIN ORDERS ─────────────────────────────────────────────────────────────
-async function markReady(orderId, fbKey) {
-  if (fbKey) {
-    await fbPatchOrder(fbKey, { status: "Ready" });
-  }
-
-  await renderAdminOrders();
-  showToast("Order " + orderId + " marked as Ready!");
-}
-
-function notifyCustomer(orderId) {
-  const msg = `✅ Your order *${orderId}* at CHAI LIJE is READY! Please come collect. ☕`;
-  window.open("https://wa.me/" + OWNER_PHONE + "?text=" + encodeURIComponent(msg), "_blank");
-}
-
-async function clearAllOrders() {
-  if (!confirm("Clear all completed (Ready) orders?")) return;
-  const readyOrders = orders.filter(o => o.status === "Ready");
-  await Promise.all(readyOrders.map(o => fbDeleteOrder(o._fbKey)));
-  await renderAdminOrders();
-  showToast("Cleared completed orders");
-}
-
+// ─── RENDER ADMIN ORDERS ───────────────────────
 async function renderAdminOrders() {
-  function renderAdminOrders(orders) {
-  const container = document.getElementById("orders");
+  const container = document.getElementById("admin-orders-list");
 
-  if (!orders) {
-    container.innerHTML = "No orders yet";
+  const data = await fbGetOrders();
+
+  if (data.length === 0) {
+    container.innerHTML = "<p>No orders yet</p>";
     return;
   }
 
-  const html = Object.keys(orders)
-    .reverse()
-    .map(id => {
-      const order = orders[id];
-
-      return `
-        <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
-          <h3>Order ${order.id || id}</h3>
-          <p>Status: ${order.status || "Preparing"}</p>
-          <p>Total: ₹${order.total || 0}</p>
-        </div>
-      `;
-    })
-    .join("");
-
-  container.innerHTML = html;
-}
-}
-
-// ─── ADMIN MENU MANAGEMENT ────────────────────────────────────────────────────
-function renderAdminMenu() {
-  const container = document.getElementById("admin-menu-list");
   let html = "";
 
-  MENU.forEach(cat => {
-    html += `<div class="menu-mgmt-category"><div class="menu-mgmt-cat-title">${cat.label}</div>`;
-    cat.items.forEach(item => {
-      const key   = item.name + "|" + item.price + (item.sub ? "|" + item.sub : "");
-      const isOn  = getItemAvailable(key);
-      const label = item.name + (item.sub ? ` (${item.sub})` : "");
-      html += `
-        <div class="menu-mgmt-item">
-          <div class="menu-mgmt-item-info">
-            <div class="menu-mgmt-item-name">${label}</div>
-            <div class="menu-mgmt-item-price">₹${item.price} &nbsp;
-              <span class="menu-mgmt-item-status ${isOn ? "status-on" : "status-off"}" id="status-${cssId(key)}">
-                ${isOn ? "● Available" : "● Out of Stock"}
-              </span>
-            </div>
-          </div>
-          <label class="toggle-switch" title="${isOn ? "Click to mark Out of Stock" : "Click to make Available"}">
-            <input type="checkbox" ${isOn ? "checked" : ""} onchange="toggleItem('${escapeQ(key)}', this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>`;
-    });
-    html += `</div>`;
+  data.forEach(order => {
+    html += `
+      <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
+        <h3>Order ${order.id}</h3>
+        <p>Status: ${order.status}</p>
+        <p>Total: ₹${order.total}</p>
+      </div>
+    `;
   });
 
   container.innerHTML = html;
 }
 
-function toggleItem(key, available) {
-  setItemAvailable(key, available);
-  refreshMenuCard(key, available);
-
-  // Update status label in admin panel
-  const statusEl = document.getElementById("status-" + cssId(key));
-  if (statusEl) {
-    statusEl.className = "menu-mgmt-item-status " + (available ? "status-on" : "status-off");
-    statusEl.textContent = available ? "● Available" : "● Out of Stock";
+// ─── AUTO REFRESH ──────────────────────────────
+setInterval(() => {
+  if (isAdminLoggedIn) {
+    renderAdminOrders();
   }
+}, 3000);
 
-  showToast(available ? "✅ Item marked Available" : "❌ Item marked Out of Stock");
+// ─── LOGIN ─────────────────────────────────────
+function checkLogin() {
+  const id = document.getElementById("admin-id-input").value;
+  const pass = document.getElementById("admin-pass-input").value;
+
+  if (id === ADMIN_ID && pass === ADMIN_PASS) {
+    isAdminLoggedIn = true;
+    document.getElementById("admin-view").style.display = "block";
+    document.getElementById("customer-view").style.display = "none";
+    renderAdminOrders();
+  } else {
+    alert("Wrong credentials");
+  }
 }
-
-// ─── TOAST ────────────────────────────────────────────────────────────────────
-let toastTimer;
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
-}
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-buildMenu();
-updateCartUI();
-// Red dot and sound are NOT shown on init — only admin sees them after login
-<script>
 window.addEventListener("DOMContentLoaded", () => {
   setInterval(async () => {
     try {
