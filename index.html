@@ -1187,3 +1187,33 @@ updateCartUI();
 </script>
 </body>
 </html>
+setInterval(async () => {
+  try {
+    const res = await fetch(FIREBASE_URL + "orders.json");
+    const data = await res.json();
+
+    const container = document.getElementById("orders");
+
+    if (!data) {
+      container.innerHTML = "No orders yet";
+      return;
+    }
+
+    const html = Object.keys(data).reverse().map(id => {
+      const order = data[id];
+
+      return `
+        <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
+          <h3>Order ${order.id || id}</h3>
+          <p>Status: ${order.status}</p>
+          <p>Total: ₹${order.total}</p>
+        </div>
+      `;
+    }).join("");
+
+    container.innerHTML = html;
+
+  } catch (e) {
+    console.error("Error:", e);
+  }
+}, 3000);
