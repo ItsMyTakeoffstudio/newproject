@@ -1185,34 +1185,36 @@ buildMenu();
 updateCartUI();
 // Red dot and sound are NOT shown on init — only admin sees them after login
 <script>
-setInterval(async () => {
-  try {
-    const res = await fetch(FIREBASE_URL + "orders.json");
-    const data = await res.json();
+window.addEventListener("DOMContentLoaded", () => {
+  setInterval(async () => {
+    try {
+      const res = await fetch(FIREBASE_URL + "orders.json");
+      const data = await res.json();
 
-    const container = document.getElementById("orders");
+      const container = document.getElementById("orders");
 
-    if (!data) {
-      container.innerHTML = "No orders yet";
-      return;
+      if (!data) {
+        container.innerHTML = "No orders yet";
+        return;
+      }
+
+      const html = Object.keys(data).reverse().map(id => {
+        const order = data[id];
+
+        return `
+          <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
+            <h3>Order ${order.id || id}</h3>
+            <p>Status: ${order.status}</p>
+            <p>Total: ₹${order.total}</p>
+          </div>
+        `;
+      }).join("");
+
+      container.innerHTML = html;
+
+    } catch (e) {
+      console.error("Error:", e);
     }
-
-    const html = Object.keys(data).reverse().map(id => {
-      const order = data[id];
-
-      return `
-        <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
-          <h3>Order ${order.id || id}</h3>
-          <p>Status: ${order.status}</p>
-          <p>Total: ₹${order.total}</p>
-        </div>
-      `;
-    }).join("");
-
-    container.innerHTML = html;
-
-  } catch (e) {
-    console.error("Error:", e);
-  }
-}, 3000);
+  }, 3000);
+});
 </script>
