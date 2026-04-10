@@ -669,6 +669,7 @@ async function fbGetOrders() {
   try {
     const r = await fetch(FIREBASE_URL + "orders.json");
     const data = await r.json();
+    renderAdminOrders(data);
     if (!data) return [];
     return Object.entries(data)
       .map(([k, v]) => ({ ...v, _fbKey: k }))
