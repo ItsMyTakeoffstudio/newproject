@@ -1051,10 +1051,8 @@ function showAdminTab(tab) {
 async function markReady(orderId, fbKey) {
   if (fbKey) {
     await fbPatchOrder(fbKey, { status: "Ready" });
-  } else {
-    // fallback: local only (shouldn't happen with Firebase)
-    orders = orders.map(o => o.id === orderId ? { ...o, status: "Ready" } : o);
   }
+
   await renderAdminOrders();
   showToast("Order " + orderId + " marked as Ready!");
 }
