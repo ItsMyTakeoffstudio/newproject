@@ -890,29 +890,52 @@ async function placeOrder() {
   const keys = Object.keys(cart);
   if (keys.length === 0) return;
 
-  const orderId     = generateOrderId();
-  const items       = keys.map(k => ({ label: cart[k].label, qty: cart[k].qty, price: cart[k].price }));
-  const total       = cartTotal();
-  const now         = new Date();
-  const timestamp   = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-  const timestamp_ms = Date.now();
+  const orderId = "CL" + Date.now().toString().slice(-5);
 
-  const order = { id: orderId, items, total, status: "Preparing", timestamp, timestamp_ms };
+  const items = keys.map(k => ({
+    label: cart[k].label,
+    qty: cart[k].qty,
+    price: cart[k].price
+  }));
 
-  // Save to Firebase — admin's EventSource will detect this and play chime
-  await fbPostOrder(order);
+  const total = cartTotal();
 
-  // Build WhatsApp message for owner
-  let msg = `🧾 *New Order — ${orderId}*\n🕐 ${timestamp}\n\n`;
-  items.forEach(i => { msg += `▪ ${i.label} × ${i.qty} = ₹${i.qty * i.price}\n`; });
-  msg += `\n💰 *Total: ₹${total}*\n\n📍 CHAI LIJE, Pragathi Nagar`;
-  window.open("https://wa.me/" + OWNER_PHONE + "?text=" + encodeURIComponent(msg), "_blank");
+  const order = {
+    id: orderId,
+    items,
+    total,
+    status: "Preparing",
+    timestamp: new Date().toLocaleTimeString(),
+    timestamp_ms: Date.now()
+  };
 
-  showToast("✅ Order #" + orderId + " placed!");
+  // Save to Firebase (safe)
+  try {
+    await fetch(FIREBASE_URL + "orders.json", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(order)
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
+  // Open WhatsApp (always works)
+  let msg = `Order ${orderId}\n\n`;
+  items.forEach(i => {
+    msg += `${i.label} x ${i.qty} = ₹${i.qty * i.price}\n`;
+  });
+  msg += `\nTotal: ₹${total}`;
+
+  window.open(
+    "https://wa.me/" + OWNER_PHONE + "?text=" + encodeURIComponent(msg),
+    "_blank"
+  );
+
+  showToast("Order placed!");
   clearCart();
   closeCart();
 }
-
 // ─── ADMIN REAL-TIME LISTENER (Firebase EventSource) ─────────────────────────
 function startAdminPolling() {
   if (!fbConfigured()) {
