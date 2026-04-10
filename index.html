@@ -666,7 +666,7 @@ function fbConfigured() {
 async function fbGetOrders() {
   if (!fbConfigured()) return [];
   try {
-    const r = await fetch(FIREBASE_URL + "/orders.json");
+    const r = await fetch(FIREBASE_URL + "orders.json");
     const data = await r.json();
     if (!data) return [];
     return Object.entries(data)
@@ -677,7 +677,7 @@ async function fbGetOrders() {
 
 async function fbPostOrder(order) {
   if (!fbConfigured()) return;
-  await fetch(FIREBASE_URL + "/orders.json", {
+  await fetch(FIREBASE_URL + "orders.json", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(order)
@@ -923,7 +923,7 @@ function startAdminPolling() {
   adminInitialLoad = true;
 
   // Open Firebase Server-Sent Events stream — fires instantly on any DB change
-  adminEvtSource = new EventSource(FIREBASE_URL + "/orders.json");
+  adminEvtSource = new EventSource(FIREBASE_URL + "orders.json");
 
   adminEvtSource.addEventListener("put", async (e) => {
     const d = JSON.parse(e.data);
