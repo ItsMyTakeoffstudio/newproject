@@ -531,10 +531,43 @@ const FIREBASE_URL = "https://chai-lije-app-default-rtdb.asia-southeast1.firebas
 
 // ─── STATE ─────────────────────────────────────
 let cart = {};
-let orders = [];
 let isAdminLoggedIn = false;
 
-// ─── FIREBASE FUNCTIONS ─────────────────────────
+// ─── LOGIN MODAL ───────────────────────────────
+function openLoginModal() {
+  document.getElementById("login-modal").classList.add("open");
+}
+function closeLoginModal() {
+  document.getElementById("login-modal").classList.remove("open");
+}
+
+// ─── LOGIN ─────────────────────────────────────
+function checkLogin() {
+  const id = document.getElementById("admin-id-input").value;
+  const pass = document.getElementById("admin-pass-input").value;
+
+  if (id === ADMIN_ID && pass === ADMIN_PASS) {
+    isAdminLoggedIn = true;
+    closeLoginModal();
+    switchView("admin");
+  } else {
+    alert("Wrong credentials");
+  }
+}
+
+// ─── VIEW SWITCH (FIXED) ───────────────────────
+function switchView(view) {
+  if (view === "admin") {
+    document.getElementById("customer-view").style.display = "none";
+    document.getElementById("admin-view").style.display = "block";
+    renderAdminOrders();
+  } else {
+    document.getElementById("customer-view").style.display = "block";
+    document.getElementById("admin-view").style.display = "none";
+  }
+}
+
+// ─── FIREBASE ──────────────────────────────────
 async function fbGetOrders() {
   try {
     const res = await fetch(FIREBASE_URL + "orders.json");
@@ -542,18 +575,17 @@ async function fbGetOrders() {
 
     if (!data) return [];
 
-    return Object.entries(data).map(([key, val]) => ({
-      ...val,
-      _fbKey: key
+    return Object.entries(data).map(([k, v]) => ({
+      ...v,
+      _key: k
     })).reverse();
-
   } catch (e) {
-    console.error("Firebase error:", e);
+    console.error(e);
     return [];
   }
 }
 
-// ─── PLACE ORDER ────────────────────────────────
+// ─── PLACE ORDER ───────────────────────────────
 async function placeOrder() {
   if (Object.keys(cart).length === 0) return;
 
@@ -577,7 +609,7 @@ async function placeOrder() {
 
   await fetch(FIREBASE_URL + "orders.json", {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(order)
   });
 
@@ -594,13 +626,13 @@ async function placeOrder() {
   alert("Order placed!");
 }
 
-// ─── RENDER ADMIN ORDERS ───────────────────────
+// ─── RENDER ORDERS (FIXED) ─────────────────────
 async function renderAdminOrders() {
   const container = document.getElementById("admin-orders-list");
 
-  const data = await fbGetOrders();
+  const orders = await fbGetOrders();
 
-  if (!data || data.length === 0) {
+  if (orders.length === 0) {
     container.innerHTML = `
       <div class="no-orders">
         <div class="icon">🧾</div>
@@ -611,16 +643,16 @@ async function renderAdminOrders() {
 
   let html = "";
 
-  data.forEach(order => {
+  orders.forEach(o => {
     html += `
       <div class="order-card">
         <div class="order-card-head">
-          <span class="order-id">#${order.id}</span>
-          <span class="order-badge badge-preparing">${order.status}</span>
+          <span class="order-id">#${o.id}</span>
+          <span class="order-badge badge-preparing">${o.status}</span>
         </div>
 
         <ul class="order-items">
-          ${order.items.map(i => `
+          ${o.items.map(i => `
             <li>
               <span>${i.label} x ${i.qty}</span>
               <span>₹${i.qty * i.price}</span>
@@ -628,7 +660,7 @@ async function renderAdminOrders() {
           `).join("")}
         </ul>
 
-        <div class="order-total">Total: ₹${order.total}</div>
+        <div class="order-total">Total: ₹${o.total}</div>
       </div>
     `;
   });
@@ -636,74 +668,11 @@ async function renderAdminOrders() {
   container.innerHTML = html;
 }
 
-// ─── ADMIN LOGIN ───────────────────────────────
-function checkLogin() {
-  const id = document.getElementById("admin-id-input").value;
-  const pass = document.getElementById("admin-pass-input").value;
-
-  if (id === ADMIN_ID && pass === ADMIN_PASS) {
-    isAdminLoggedIn = true;
-
-    document.getElementById("admin-view").style.display = "block";
-    document.getElementById("customer-view").style.display = "none";
-
-    renderAdminOrders();
-  } else {
-    alert("Wrong credentials");
-  }
-}
-
-// ─── AUTO REFRESH (IMPORTANT) ───────────────────
+// ─── AUTO REFRESH ──────────────────────────────
 setInterval(() => {
   if (isAdminLoggedIn) {
     renderAdminOrders();
   }
 }, 3000);
-</script>
-// ─── LOGIN ─────────────────────────────────────
-function checkLogin() {
-  const id = document.getElementById("admin-id-input").value;
-  const pass = document.getElementById("admin-pass-input").value;
 
-  if (id === ADMIN_ID && pass === ADMIN_PASS) {
-    isAdminLoggedIn = true;
-    document.getElementById("admin-view").style.display = "block";
-    document.getElementById("customer-view").style.display = "none";
-    renderAdminOrders();
-  } else {
-    alert("Wrong credentials");
-  }
-}
-window.addEventListener("DOMContentLoaded", () => {
-  setInterval(async () => {
-    try {
-      const res = await fetch(FIREBASE_URL + "orders.json");
-      const data = await res.json();
-
-      const container = document.getElementById("orders");
-
-      if (!data) {
-        container.innerHTML = "No orders yet";
-        return;
-      }
-
-      const html = Object.keys(data).reverse().map(id => {
-        const order = data[id];
-
-        return `
-          <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
-            <h3>Order ${order.id || id}</h3>
-            <p>Status: ${order.status}</p>
-            <p>Total: ₹${order.total}</p>
-          </div>
-        `;
-      }).join("");
-
-      container.innerHTML = html;
-
-    } catch (e) {
-      console.error("Error:", e);
-    }
-  }, 3000);
-});
 </script>
